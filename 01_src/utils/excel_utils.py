@@ -123,7 +123,11 @@ def extract_section_data(
     section_identifier: str,
     structure: dict,
     file_path: str | Path,
-    logger: logging.Logger
+    logger: logging.Logger,
+    header_row_index: int = 8,
+    year_2022_col: int | None = None,
+    year_2023_col: int | None = None,
+    comment_col: int | None = None
 ) -> pd.DataFrame:
     """
     Extract data for a specific section (Personnel or Material expenses) from DataFrame.
@@ -134,36 +138,35 @@ def extract_section_data(
         structure: Structure dictionary from YAML config
         file_path: Path to the source file
         logger: Logger instance
+        header_row_index: Index of the header row (default: 8)
+        year_2022_col: Column index for year 2022 (default: None)
+        year_2023_col: Column index for year 2023 (default: None)
+        comment_col: Column index for comments (default: None)
         
     Returns:
         pd.DataFrame: Extracted data
     """
-    # Find the year columns in row 8
-    year_2022_col = None
-    year_2023_col = None
-    comment_col = None
-    
-    # Add debug logging
-    logger.debug(f"Looking for section {section_identifier} in DataFrame of shape {df.shape}")
-    
-    
-    header_row = df.iloc[8]
-    for col in range(len(header_row)):
-        cell_value = str(header_row[col]).strip() if pd.notna(header_row[col]) else ''
-        if '2022' in cell_value:
-            year_2022_col = col
-        elif '2023' in cell_value:
-            year_2023_col = col
-        elif 'KOMMENTAR' in cell_value.upper():
-            comment_col = col
-    
-    if any([year_2022_col is not None, year_2023_col is not None, comment_col is not None]):
-        logger.debug(f"Found year columns - 2022: {year_2022_col}, 2023: {year_2023_col}, comment: {comment_col}")
-    else:
-        year_2022_col = 6
-        year_2023_col = 7
-        comment_col = 8
-        logger.error(f"No year columns found in header row, using default values")
+    # If year columns are not provided, find them in the header row
+    if any(col is None for col in [year_2022_col, year_2023_col, comment_col]):
+        header_row = df.iloc[header_row_index]
+        
+        if year_2022_col is None or year_2023_col is None or comment_col is None:
+            for col in range(len(header_row)):
+                cell_value = str(header_row[col]).strip() if pd.notna(header_row[col]) else ''
+                if year_2022_col is None and '2022' in cell_value:
+                    year_2022_col = col
+                elif year_2023_col is None and '2023' in cell_value:
+                    year_2023_col = col
+                elif comment_col is None and 'KOMMENTAR' in cell_value.upper():
+                    comment_col = col
+
+        if any([year_2022_col is None, year_2023_col is None, comment_col is None]):
+            logger.warning("Using default column indices as not all columns were found in header")
+            year_2022_col = 6 if year_2022_col is None else year_2022_col
+            year_2023_col = 7 if year_2023_col is None else year_2023_col
+            comment_col = 8 if comment_col is None else comment_col
+
+    logger.debug(f"Using columns - 2022: {year_2022_col}, 2023: {year_2023_col}, comment: {comment_col}")
 
     # Find the start of the section - modified to handle all section types
     start_row = None
@@ -173,7 +176,7 @@ def extract_section_data(
     logger.debug(f"Looking for section with key: {section_key}")
     
     # Look for the section header through the entire DataFrame to find the start row
-    for idx in range(8, len(df)):  # Start from row 8 but search through all rows
+    for idx in range(header_row_index, len(df)):  # Start from row 8 but search through all rows
         row = df.iloc[idx]
         for col in range(len(row)):
             cell_value = str(row[col]).strip() if pd.notna(row[col]) else ''
