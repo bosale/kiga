@@ -329,3 +329,75 @@ def load_structure(config_file: str) -> dict:
     structure_file = Path(__file__).parent.parent / "config" / config_file
     with open(structure_file, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f) 
+
+def extract_balance_data(
+    df: pd.DataFrame,
+    section_identifier: str,
+    structure: dict,
+    file_path: str | Path,
+    logger: logging.Logger,
+) -> pd.DataFrame:
+    """
+    Extract balance sheet data (Vermögen/Verbindlichkeiten) from DataFrame.
+    
+    Args:
+        df: DataFrame containing the data
+        section_identifier: Section identifier (e.g., 'Vermögen', 'Verbindlichkeiten')
+        structure: Structure dictionary from YAML config
+        file_path: Path to the source file
+        logger: Logger instance
+        
+    Returns:
+        pd.DataFrame: Extracted data
+    """
+    # Find the section start
+    start_row = None
+    for idx in range(len(df)):
+        cell_value = str(df.iloc[idx, 0]).strip() if pd.notna(df.iloc[idx, 0]) else ''
+        if section_identifier in cell_value:
+            start_row = idx
+            break
+    
+    if start_row is None:
+        raise ValueError(f"Section {section_identifier} not found in file")
+        
+    # Initialize data collection
+    rows = []
+    items = structure[section_identifier]['items']
+    
+    # Process rows until we hit "SUMME" or empty rows
+    for idx in range(start_row + 1, len(df)):
+        description = str(df.iloc[idx, 0]).strip() if pd.notna(df.iloc[idx, 0]) else ''
+        
+        # Stop if we hit SUMME
+        if 'SUMME' in description.upper():
+            break
+            
+        # Skip empty rows
+        if not description:
+            continue
+            
+        # Check if this row matches any item in our structure
+        for item in items:
+            if description.startswith(item.split('(')[0].strip()):
+                try:
+                    value_2023_start = df.iloc[idx, 1] if pd.notna(df.iloc[idx, 1]) else None
+                    value_2023_end = df.iloc[idx, 2] if pd.notna(df.iloc[idx, 2]) else None
+                    change = df.iloc[idx, 3] if pd.notna(df.iloc[idx, 3]) else None
+                    
+                    rows.append({
+                        'source_file': Path(file_path).stem,
+                        'category': section_identifier,
+                        'item': item,
+                        'value_2023_start': value_2023_start,
+                        'value_2023_end': value_2023_end,
+                        'change': change
+                    })
+                except Exception as e:
+                    logger.warning(f"Error processing row {idx} for item {item}: {e}")
+                break
+    
+    if not rows:
+        raise ValueError(f"No data extracted from {file_path}")
+        
+    return pd.DataFrame(rows) 

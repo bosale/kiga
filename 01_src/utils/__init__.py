@@ -12,5 +12,5 @@ __all__ = [
     'handle_problematic_files',
     'setup_logger',
     'extract_section_data',
-    'load_structure'
+    'load_structure',
 ] 
