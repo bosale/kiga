@@ -146,6 +146,7 @@ def extract_section_data(
     # Add debug logging
     logger.debug(f"Looking for section {section_identifier} in DataFrame of shape {df.shape}")
     
+    
     header_row = df.iloc[8]
     for col in range(len(header_row)):
         cell_value = str(header_row[col]).strip() if pd.notna(header_row[col]) else ''
@@ -156,8 +157,14 @@ def extract_section_data(
         elif 'KOMMENTAR' in cell_value.upper():
             comment_col = col
     
-    logger.debug(f"Found year columns - 2022: {year_2022_col}, 2023: {year_2023_col}, comment: {comment_col}")
-    
+    if any([year_2022_col is not None, year_2023_col is not None, comment_col is not None]):
+        logger.debug(f"Found year columns - 2022: {year_2022_col}, 2023: {year_2023_col}, comment: {comment_col}")
+    else:
+        year_2022_col = 6
+        year_2023_col = 7
+        comment_col = 8
+        logger.error(f"No year columns found in header row, using default values")
+
     # Find the start of the section - modified to handle all section types
     start_row = None
     
@@ -165,19 +172,7 @@ def extract_section_data(
     section_key = list(structure.keys())[0]  # Get the full section name from structure
     logger.debug(f"Looking for section with key: {section_key}")
     
-    # Debug log the content in chunks to avoid overwhelming the logs
-    chunk_size = 50
-    total_rows = len(df)
-    logger.debug(f"Total rows in DataFrame: {total_rows}")
-    for chunk_start in range(0, total_rows, chunk_size):
-        chunk_end = min(chunk_start + chunk_size, total_rows)
-        logger.debug(f"\nChecking rows {chunk_start} to {chunk_end}:")
-        for idx in range(chunk_start, chunk_end):
-            cell_value = str(df.iloc[idx, 2]).strip() if pd.notna(df.iloc[idx, 2]) else ''
-            if cell_value:  # Only log non-empty cells
-                logger.debug(f"Row {idx}: {cell_value}")
-    
-    # Look for the section header through the entire DataFrame
+    # Look for the section header through the entire DataFrame to find the start row
     for idx in range(8, len(df)):  # Start from row 8 but search through all rows
         row = df.iloc[idx]
         for col in range(len(row)):
@@ -185,14 +180,6 @@ def extract_section_data(
             # Check for both exact match and partial match
             if section_key in cell_value or f'{section_identifier}.' in cell_value:
                 start_row = idx
-                logger.debug(f"\nFound section start at row {idx} with value: {cell_value}")
-                # Log the surrounding context
-                context_start = max(0, idx - 5)
-                context_end = min(len(df), idx + 5)
-                logger.debug("Context around found section:")
-                for context_idx in range(context_start, context_end):
-                    context_value = str(df.iloc[context_idx, col]).strip() if pd.notna(df.iloc[context_idx, col]) else ''
-                    logger.debug(f"Row {context_idx}: {context_value}")
                 break
         if start_row is not None:
             break
@@ -202,6 +189,8 @@ def extract_section_data(
         logger.debug("Available sections in structure:")
         logger.debug(structure.keys())
         raise ValueError(f"Could not find section {section_identifier}")
+    else:
+        logger.debug(f"Found start_row {start_row} at row {start_row}")
     
     # Use the actual section key from structure
     structure_key = section_key
