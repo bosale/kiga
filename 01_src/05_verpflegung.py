@@ -103,32 +103,44 @@ def extract_verpflegung(file_path: str | Path) -> pd.DataFrame:
                     if category.lower() in cell_str.lower():
                         # Get the values for both years (assuming they're in the next columns)
                         values_row = df.iloc[current_row]
-                        # Find the numeric values in this row
-                        values = [val for val in values_row if pd.notna(val) and 
-                                (isinstance(val, (int, float)) or 
-                                 (isinstance(val, str) and any(c.isdigit() for c in val)))]
                         
-                        # Clean and convert values
-                        year_x_val = None
-                        year_y_val = None
-                        
-                        for val in values:
-                            if isinstance(val, str):
-                                # Handle percentage values
-                                if '%' in val:
-                                    val = val.replace('%', '').strip()
-                                # Handle currency values
-                                val = str(val).replace('€', '').replace(',', '').strip()
-                            
-                            try:
-                                val = float(val)
-                                if year_x_val is None:
-                                    year_x_val = val
-                                else:
-                                    year_y_val = val
-                                    break
-                            except (ValueError, TypeError):
+                        # Special handling for Selbstkocher which has Ja/Nein values
+                        if "Selbstkocher" in category:
+                            # Find the "Ja" or "Nein" values
+                            values = [str(val).strip() for val in values_row if pd.notna(val) and 
+                                    str(val).strip().lower() in ['ja', 'nein']]
+                            if len(values) >= 2:
+                                year_x_val = values[0]
+                                year_y_val = values[1]
+                            else:
                                 continue
+                        else:
+                            # Original numeric value handling
+                            values = [val for val in values_row if pd.notna(val) and 
+                                    (isinstance(val, (int, float)) or 
+                                     (isinstance(val, str) and any(c.isdigit() for c in val)))]
+                            
+                            # Clean and convert values
+                            year_x_val = None
+                            year_y_val = None
+                            
+                            for val in values:
+                                if isinstance(val, str):
+                                    # Handle percentage values
+                                    if '%' in val:
+                                        val = val.replace('%', '').strip()
+                                    # Handle currency values
+                                    val = str(val).replace('€', '').replace(',', '').strip()
+                                
+                                try:
+                                    val = float(val)
+                                    if year_x_val is None:
+                                        year_x_val = val
+                                    else:
+                                        year_y_val = val
+                                        break
+                                except (ValueError, TypeError):
+                                    continue
                         
                         if year_x_val is not None or year_y_val is not None:
                             data.append({
