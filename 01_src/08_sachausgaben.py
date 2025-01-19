@@ -5,23 +5,12 @@ from utils import (
     find_sheet_with_content,
     process_multiple_files,
     setup_logger,
-    extract_section_data
+    extract_section_data,
+    load_structure
 )
-import yaml
 
 # Setup logger
 logger = setup_logger('sachausgaben')
-
-def load_structure() -> dict:
-    """
-    Load the material expenses structure from YAML file.
-    
-    Returns:
-        dict: The structure configuration for material expenses
-    """
-    structure_file = Path(__file__).parent / "config" / "sachausgaben_structure.yaml"
-    with open(structure_file, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
 
 def extract_sachausgaben(file_path: str | Path) -> pd.DataFrame:
     """
@@ -35,7 +24,7 @@ def extract_sachausgaben(file_path: str | Path) -> pd.DataFrame:
     """
     logger.info(f"\nProcessing file: {file_path}")
     
-    structure = load_structure()
+    structure = load_structure("sachausgaben_structure.yaml")
     target_sheet = find_sheet_with_content(file_path, 'A. AUSGABEN')
     logger.info(f"Found sheet: {target_sheet}")
     

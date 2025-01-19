@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import logging
 from pathlib import Path
+import yaml
 
 def find_sheet_with_content(file_path, search_text, nrows=50):
     """
@@ -285,3 +286,17 @@ def extract_section_data(
     
     logger.debug(f"Extracted {len(rows)} rows of data")
     return pd.DataFrame(rows) 
+
+def load_structure(config_file: str) -> dict:
+    """
+    Load a structure configuration from YAML file.
+    
+    Args:
+        config_file: Name of the YAML config file to load
+        
+    Returns:
+        dict: The structure configuration
+    """
+    structure_file = Path(__file__).parent.parent / "config" / config_file
+    with open(structure_file, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f) 

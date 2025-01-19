@@ -5,23 +5,14 @@ from utils import (
     find_sheet_with_content,
     process_multiple_files,
     setup_logger,
-    extract_section_data
+    extract_section_data,
+    load_structure
 )
 import yaml
 
 # Setup logger
 logger = setup_logger('personalausgaben')
 
-def load_structure() -> dict:
-    """
-    Load the personnel expenses structure from YAML file.
-    
-    Returns:
-        dict: The structure configuration for personnel expenses
-    """
-    structure_file = Path(__file__).parent / "config" / "personalausgaben_structure.yaml"
-    with open(structure_file, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
 
 def extract_personalausgaben(file_path: str | Path) -> pd.DataFrame:
     """
