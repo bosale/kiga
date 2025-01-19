@@ -81,3 +81,6 @@ Pipfile.lock
 # Data files
 *.csv
 02_data/02_output/
+
+# checkpoint json files called processed_files_*
+processed_files_*.json
