@@ -37,7 +37,7 @@ def extract_personalausgaben(file_path: str | Path) -> pd.DataFrame:
     """
     logger.info(f"\nProcessing file: {file_path}")
     
-    structure = load_structure()
+    structure = load_structure("personalausgaben_structure.yaml")
     logger.debug(f"Loaded structure: {structure}")
     
     target_sheet = find_sheet_with_content(file_path, 'A. AUSGABEN')
