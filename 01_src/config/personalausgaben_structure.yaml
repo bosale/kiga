@@ -1,0 +1,45 @@
+I. PERSONALAUSGABEN:
+  "1. BETREUUNGSPERSONAL":
+    description: "(Bruttobezüge inkl. Sonderzahlungen, ohne Dienstgeberabgaben)"
+    items:
+      - "Kindergärtner*innen/Kindergruppenbetreuer*innen mit Ausbildung"
+      - "Assistent*innen/Kindergruppenbetreuer*innen ohne Ausbildung"
+      - "Temporäres Personal: Aushilfen, Fremdpersonal (Leiharbeitsfirmen)"
+  
+  "2. VERWALTUNGSPERSONAL":
+    description: "(Bruttobezüge inkl. Sonderzahlungen, ohne Dienstgeberabgaben)"
+    items:
+      - "ausschließlich für die Verwaltung angestelltes Personal"
+  
+  "3. HAUSPERSONAL":
+    description: "(Bruttobezüge inkl. Sonderzahlungen, ohne Dienstgeberabgaben)"
+    items:
+      - "Reinigungskräfte"
+      - "Köch*innen"
+      - "anderes Hauspersonal"
+  
+  "4. ABFERTIGUNGEN":
+    description: "2)"
+    items:
+      - "ausbezahlte Abfertigungen"
+  
+  "5. GESETZLICHE DIENSTGEBERABGABEN":
+    description: "(nur für Personalausgaben)"
+    items:
+      - "Sozialversicherung Dienstgeberbeitrag"
+      - "Dienstgeberbeitrag (DB) zum FLAF"
+      - "Wiener Dienstgeberabgabe (DGA; \"U-Bahnsteuer\")"
+      - "Mitarbeitervorsorgekasse (MVK; betriebliche Vorsorge BV)"
+      - "weitere gesetzliche Dienstgeberabgaben 3)"
+  
+  "6. SONSTIGE PERSONALAUSGABEN":
+    description: ""
+    items:
+      - "Schulungen, Kurse, Tagungen"
+      - "Supervision"
+      - "weitere sonstige Personalausgaben 3)"
+  
+  "7. PERSONALAUSGABEN FÜR ZUSATZLEISTUNGEN":
+    description: "1)"
+    items:
+      - "ausschließlich zur Erfüllung der Zusatzleistungen angestelltes Personal" 
