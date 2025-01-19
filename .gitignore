@@ -77,3 +77,7 @@ Pipfile.lock
 
 # PDF files
 *.pdf
+
+# Data files
+*.csv
+02_data/02_output/
