@@ -3,6 +3,7 @@ import os
 import logging
 from pathlib import Path
 import yaml
+from fuzzywuzzy import fuzz
 
 def find_sheet_with_content(file_path, search_text, nrows=500):
     """
@@ -401,3 +402,41 @@ def extract_balance_data(
         raise ValueError(f"No data extracted from {file_path}")
         
     return pd.DataFrame(rows) 
+
+def find_sheet_by_cell_value(file_path, search_text, cell="A1", threshold=80):
+    """
+    Find the first sheet in an Excel file that contains text similar to the specified text in a specific cell.
+    
+    Args:
+        file_path (str): Path to the Excel file
+        search_text (str): Text to search for in the cell
+        cell (str): Cell reference to check (default: "A1")
+        threshold (int): Minimum similarity score (0-100) to consider a match (default: 80)
+    
+    Returns:
+        str: Name of the sheet containing similar text in the specified cell, or None if not found
+    """
+    xl = pd.ExcelFile(file_path)
+    
+    # Convert search text to uppercase for consistent comparison
+    search_text = str(search_text).upper()
+    for sheet_name in xl.sheet_names:
+        # Skip the INFORMATION sheet
+        if sheet_name.upper() == "INFORMATION":
+            continue
+            
+        # Read just the specific cell
+        try:
+            df = pd.read_excel(file_path, sheet_name=sheet_name)
+            cell_value = df.columns[0]
+            # Convert to string and compare using fuzzy matching
+            if pd.notna(cell_value):
+                cell_text = str(cell_value).upper()
+                # Use token_set_ratio to handle partial matches and different word orders
+                similarity = fuzz.token_set_ratio(search_text, cell_text)
+                if similarity >= threshold:
+                    return sheet_name
+        except Exception:
+            continue
+    
+    return None 
