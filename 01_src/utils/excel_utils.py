@@ -154,9 +154,12 @@ def extract_section_data(
     
     logger.debug(f"Found year columns - 2022: {year_2022_col}, 2023: {year_2023_col}, comment: {comment_col}")
     
-    # Find the start of the section - modified to be more flexible
+    # Find the start of the section - modified to handle all section types
     start_row = None
-    section_key = f'{section_identifier}. PERSONALAUSGABEN' if section_identifier == 'I' else f'{section_identifier}. SACHAUSGABEN'
+    
+    # Get the section key from the structure instead of hardcoding
+    section_key = list(structure.keys())[0]  # Get the full section name from structure
+    logger.debug(f"Looking for section with key: {section_key}")
     
     # Debug the first 20 rows to see what we're looking at
     logger.debug("First 20 rows content in column 2:")
@@ -183,8 +186,8 @@ def extract_section_data(
         logger.debug(structure.keys())
         raise ValueError(f"Could not find section {section_identifier}")
     
-    # Define the expected section headers from structure
-    structure_key = f'{section_identifier}. PERSONALAUSGABEN' if section_identifier == 'I' else f'{section_identifier}. SACHAUSGABEN'
+    # Use the actual section key from structure
+    structure_key = section_key
     section_patterns = list(structure[structure_key].keys())
     
     # Initialize data dictionary
@@ -200,7 +203,7 @@ def extract_section_data(
     }
     
     # Process each row after the section
-    main_category = section_key
+    main_category = structure_key
     current_subcategory = None
     current_detail = None
     
@@ -224,11 +227,14 @@ def extract_section_data(
             
         # Check for section headers
         for pattern in section_patterns:
-            if pattern in description:
+            # Make the pattern matching more flexible for this specific case
+            if (description.strip() == pattern.strip() or
+                description.strip() in pattern.strip() or
+                pattern.strip() in description.strip()):
                 current_subcategory = pattern
                 current_detail = None
                 found_section = True
-                logger.debug(f"Found subsection: {pattern}")
+                logger.debug(f"Found subsection: {pattern} matching description: {description}")
                 break
         
         # Process data rows if we have a current subcategory
@@ -238,13 +244,16 @@ def extract_section_data(
                 value_2023 = row.iloc[year_2023_col] if pd.notna(row.iloc[year_2023_col]) else None
                 
                 if (isinstance(value_2022, (int, float)) or isinstance(value_2023, (int, float))) and description:
+                    # Make item matching more flexible
+                    clean_desc = ' '.join(description.lower().split())
                     for item in structure[structure_key][current_subcategory]['items']:
-                        clean_desc = ' '.join(description.lower().split())
                         clean_item = ' '.join(item.lower().split())
-                        
-                        if clean_desc == clean_item:
+                        # More flexible matching for this case
+                        if (clean_desc == clean_item or
+                            clean_desc in clean_item or
+                            clean_item in clean_desc):
                             current_detail = item
-                            logger.debug(f"Found matching item: {item}")
+                            logger.debug(f"Found matching item: {item} for description: {description}")
                             
                             if isinstance(value_2022, (int, float)):
                                 data['year_2022'][current_detail] = value_2022
@@ -264,6 +273,17 @@ def extract_section_data(
             except (ValueError, TypeError) as e:
                 logger.debug(f"Error processing row {idx}: {e}")
                 continue
+    
+    # After finding the section:
+    if start_row is not None:
+        logger.debug("Found main section, looking at content:")
+        # Print the next 10 rows after the section start
+        for i in range(start_row, min(start_row + 10, len(df))):
+            row = df.iloc[i]
+            desc = str(row.iloc[2]).strip() if pd.notna(row.iloc[2]) else ''
+            val_2022 = row.iloc[year_2022_col] if pd.notna(row.iloc[year_2022_col]) else None
+            val_2023 = row.iloc[year_2023_col] if pd.notna(row.iloc[year_2023_col]) else None
+            logger.debug(f"Row {i}: Description: {desc}, 2022: {val_2022}, 2023: {val_2023}")
     
     # Convert to DataFrame
     rows = []
