@@ -1,12 +1,11 @@
 import pandas as pd
 from pathlib import Path
 from utils import (
-    find_sheet_with_content,
     process_multiple_files,
     setup_logger,
-    extract_balance_data,
     load_structure
 )
+from utils.excel_utils import extract_balance_data
 
 # Setup logger
 logger = setup_logger('verbindlichkeiten')
@@ -26,7 +25,7 @@ def extract_verbindlichkeiten(file_path: str | Path) -> pd.DataFrame:
     structure = load_structure("vermoegensuebersicht_verbindlichkeiten_structure.yaml")
     
     # Find the correct sheet
-    target_sheet = find_sheet_with_content(file_path, "Vermögensübersicht")
+    target_sheet = "NB_Vermögensübersicht" # find_sheet_with_content(file_path, "Vermögensübersicht")
     
     if target_sheet is None:
         raise ValueError(f"No suitable sheet found in {file_path}")
