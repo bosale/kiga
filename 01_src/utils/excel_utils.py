@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 import yaml
 
-def find_sheet_with_content(file_path, search_text, nrows=50):
+def find_sheet_with_content(file_path, search_text, nrows=500):
     """
     Find the first sheet in an Excel file that contains the specified text.
     
@@ -19,6 +19,10 @@ def find_sheet_with_content(file_path, search_text, nrows=50):
     xl = pd.ExcelFile(file_path)
     
     for sheet_name in xl.sheet_names:
+        # Skip the INFORMATION sheet
+        if sheet_name.upper() == "INFORMATION":
+            continue
+            
         # Read first few rows to check for the search text
         preview_df = pd.read_excel(
             file_path,
@@ -161,21 +165,34 @@ def extract_section_data(
     section_key = list(structure.keys())[0]  # Get the full section name from structure
     logger.debug(f"Looking for section with key: {section_key}")
     
-    # Debug the first 20 rows to see what we're looking at
-    logger.debug("First 20 rows content in column 2:")
-    for idx in range(min(20, len(df))):
-        cell_value = str(df.iloc[idx, 2]).strip() if pd.notna(df.iloc[idx, 2]) else ''
-        logger.debug(f"Row {idx}: {cell_value}")
+    # Debug log the content in chunks to avoid overwhelming the logs
+    chunk_size = 50
+    total_rows = len(df)
+    logger.debug(f"Total rows in DataFrame: {total_rows}")
+    for chunk_start in range(0, total_rows, chunk_size):
+        chunk_end = min(chunk_start + chunk_size, total_rows)
+        logger.debug(f"\nChecking rows {chunk_start} to {chunk_end}:")
+        for idx in range(chunk_start, chunk_end):
+            cell_value = str(df.iloc[idx, 2]).strip() if pd.notna(df.iloc[idx, 2]) else ''
+            if cell_value:  # Only log non-empty cells
+                logger.debug(f"Row {idx}: {cell_value}")
     
-    # Look for the section header more flexibly
-    for idx in range(8, len(df)):
+    # Look for the section header through the entire DataFrame
+    for idx in range(8, len(df)):  # Start from row 8 but search through all rows
         row = df.iloc[idx]
         for col in range(len(row)):
             cell_value = str(row[col]).strip() if pd.notna(row[col]) else ''
             # Check for both exact match and partial match
             if section_key in cell_value or f'{section_identifier}.' in cell_value:
                 start_row = idx
-                logger.debug(f"Found section start at row {idx} with value: {cell_value}")
+                logger.debug(f"\nFound section start at row {idx} with value: {cell_value}")
+                # Log the surrounding context
+                context_start = max(0, idx - 5)
+                context_end = min(len(df), idx + 5)
+                logger.debug("Context around found section:")
+                for context_idx in range(context_start, context_end):
+                    context_value = str(df.iloc[context_idx, col]).strip() if pd.notna(df.iloc[context_idx, col]) else ''
+                    logger.debug(f"Row {context_idx}: {context_value}")
                 break
         if start_row is not None:
             break

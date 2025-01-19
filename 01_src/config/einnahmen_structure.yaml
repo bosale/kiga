@@ -1,0 +1,22 @@
+I. BETRIEBLICHE EINNAHMEN:
+  1. FÖRDERUNGEN:
+    description: Funding and grants
+    items:
+      - Förderungen durch das Arbeitsmarktservice (AMS)
+      - Förderungen durch Bundesministerien/weitere Stellen
+      - Magistratsabteilung 11 Verpflegung
+  
+  2. ELTERNBEITRÄGE:
+    description: Parent contributions
+    items:
+      - Zweckgebundene Elternbeiträge für Verpflegung
+      - Zweckgebundene Elternbeiträge für Zusatzleistungen
+      - Zweckgebundene Elternbeiträge für Ausflüge
+      - Einschreibgebühren
+  
+  3. SONSTIGE EINNAHMEN:
+    description: Other income
+    items:
+      - Versicherungsvergütungen
+      - Spenden
+      - weitere sonstige Einnahmen (bitte einzeln auflisten!) 
