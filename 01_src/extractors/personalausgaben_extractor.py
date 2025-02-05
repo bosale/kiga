@@ -1,24 +1,28 @@
+"""
+Concrete implementation of Excel extractor for Personalausgaben (personnel expenses) data.
+"""
+
 from pathlib import Path
 import pandas as pd
-from .base_extractor import BaseExtractor
+from .base_extractor import BaseExcelExtractor
 from utils import find_sheet_with_content, extract_section_data
 
 
-class PersonalausgabenExtractor(BaseExtractor):
+class PersonalausgabenExtractor(BaseExcelExtractor):
     """
     Extractor for personnel expenses data from kindergarten Excel files.
     Extracts data about staff costs, including salaries, social security contributions,
     and other personnel-related expenses.
     """
     
-    def __init__(self, structure: dict):
+    def __init__(self, config: dict):
         """
         Initialize the PersonalausgabenExtractor.
         
         Args:
-            structure: Dictionary containing the structure definition for personnel expenses
+            config: Dictionary containing the configuration for personnel expenses
         """
-        super().__init__(structure)
+        super().__init__(config)
         
     def extract_data(self, file_path: str | Path) -> pd.DataFrame:
         """
@@ -43,22 +47,41 @@ class PersonalausgabenExtractor(BaseExtractor):
         """
         self.logger.info(f"\nProcessing file: {file_path}")
         
-        target_sheet = find_sheet_with_content(file_path, 'A. AUSGABEN')
-        self.logger.info(f"Found sheet: {target_sheet}")
+        # Find the correct sheet
+        xl = pd.ExcelFile(file_path)
+        self.logger.debug(f"Available sheets: {xl.sheet_names}")
+        sheet_name = self._find_matching_sheet(xl, self.config['sheet_patterns'])
+        self.logger.info(f"Found sheet: {sheet_name}")
         
-        if target_sheet is None:
-            raise ValueError(f"No sheet containing 'A. AUSGABEN' found in {file_path}")
+        if sheet_name is None:
+            raise ValueError(f"No sheet matching patterns found in {file_path}")
         
-        df = pd.read_excel(file_path, sheet_name=target_sheet, header=None)
+        # Read the sheet
+        df = pd.read_excel(file_path, sheet_name=sheet_name, header=None)
         self.logger.debug(f"DataFrame shape: {df.shape}")
-        self.logger.debug("First few rows of DataFrame:")
-        self.logger.debug(df.head())
+        self.logger.debug("First few rows of data:")
+        self.logger.debug(df.head(10).to_string())
         
         try:
-            result = extract_section_data(df, 'I', self.structure, file_path, self.logger)
+            result = extract_section_data(
+                df=df,
+                section_identifier='I',
+                structure=self.config,
+                file_path=file_path,
+                logger=self.logger,
+                year_2022_col=3,  # Fixed column indices based on the actual data
+                year_2023_col=4,
+                comment_col=6
+            )
+            
+            # Ensure output columns are in the correct order
+            result = result[self.config['output_columns']]
+            
             self.logger.debug(f"Extracted {len(result)} rows")
+            self.logger.debug("Extracted data:")
+            self.logger.debug(result.head().to_string())
             return result
         except Exception as e:
             self.logger.error(f"Error in extract_section_data: {str(e)}")
-            self.logger.error(f"Structure used: {self.structure}")
+            self.logger.error(f"Configuration used: {self.config}")
             raise 

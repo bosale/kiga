@@ -1,5 +1,15 @@
-# Structure definition for personnel expenses data extraction
-I. PERSONALAUSGABEN:
+# Configuration for Personalausgaben (personnel expenses) data extraction
+
+# Sheet patterns to identify the correct sheet
+sheet_patterns:
+  - "NB_KIGA"
+  - "*NB_KIGA*"
+
+# Section identifier
+section_id: "I. PERSONALAUSGABEN 1)"
+
+# Categories and their items
+categories:
   "1. BETREUUNGSPERSONAL":
     description: "(Bruttobezüge inkl. Sonderzahlungen, ohne Dienstgeberabgaben)"
     items:
@@ -43,4 +53,15 @@ I. PERSONALAUSGABEN:
   "7. PERSONALAUSGABEN FÜR ZUSATZLEISTUNGEN":
     description: "1)"
     items:
-      - "ausschließlich zur Erfüllung der Zusatzleistungen angestelltes Personal" 
+      - "ausschließlich zur Erfüllung der Zusatzleistungen angestelltes Personal"
+
+# Output schema
+output_columns:
+  - source_file
+  - category
+  - subcategory
+  - subcategory_desc
+  - detail
+  - value_2022
+  - value_2023
+  - comment 
