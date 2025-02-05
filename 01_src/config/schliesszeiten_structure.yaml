@@ -1,0 +1,30 @@
+sheet_patterns:
+  - "NB_Standortinformation"
+
+# Column names and their expected positions
+columns:
+  month: 0  # Column containing month names
+  days: 1   # Column containing closing days
+  year: 2   # Column containing kindergarten year
+
+# Expected months in order (starting from September)
+months:
+  - "SEPTEMBER"
+  - "OKTOBER"
+  - "NOVEMBER"
+  - "DEZEMBER"
+  - "JANUAR"
+  - "FEBRUAR"
+  - "MÄRZ"
+  - "APRIL"
+  - "MAI"
+  - "JUNI"
+  - "JULI"
+  - "AUGUST"
+
+# Output column configuration
+output_columns:
+  - "Kindergartenjahr"
+  - "Monat"
+  - "Schliesstage"
+  - "source_file" 

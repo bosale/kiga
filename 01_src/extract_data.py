@@ -10,14 +10,18 @@ import yaml
 from extractors.kindergarten_extractor import KindergartenExcelExtractor
 from extractors.elternbeitraege_extractor import ElternbeitraegeExtractor
 from extractors.zusatzangaben_extractor import ZusatzangabenExtractor
+from extractors.schliesszeiten_extractor import SchliesszeitenExtractor
 from utils import setup_logger
+
 
 # Map of extraction types to their respective extractor classes
 EXTRACTORS = {
     'deckblatt': KindergartenExcelExtractor,
     'elternbeitraege': ElternbeitraegeExtractor,
-    'zusatzangaben': ZusatzangabenExtractor
+    'zusatzangaben': ZusatzangabenExtractor,
+    'schliesszeiten': SchliesszeitenExtractor
 }
+
 
 def parse_args():
     """Parse command line arguments."""
