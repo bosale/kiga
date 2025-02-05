@@ -103,34 +103,28 @@ class VerpflegungExtractor(BaseExcelExtractor):
         
         year_x_val = None
         year_y_val = None
-        # Fixed offsets from category column
-        year_x_col = category_col + 2
-        year_y_col = category_col + 4
         
-
-        # Extract values from the specific columns
-        if year_x_col < len(row):
-            val = row[year_x_col]
+        # Look for values in all cells after the category
+        values = []
+        for col_idx in range(category_col + 1, len(row)):
+            val = row[col_idx]
             if pd.notna(val):
                 if isinstance(val, str):
                     # Handle currency values
                     val = str(val).replace('€', '').replace('.', '').replace(',', '.').strip()
-                try:
-                    year_x_val = float(val)
-                except (ValueError, TypeError):
-                    pass
+                    try:
+                        val = float(val)
+                    except (ValueError, TypeError):
+                        continue
+                if isinstance(val, (int, float)):
+                    values.append(val)
                     
-        if year_y_col < len(row):
-            val = row[year_y_col]
-            if pd.notna(val):
-                if isinstance(val, str):
-                    # Handle currency values
-                    val = str(val).replace('€', '').replace('.', '').replace(',', '.').strip()
-                try:
-                    year_y_val = float(val)
-                except (ValueError, TypeError):
-                    pass
-        
+        # Take the first two numeric values found
+        if len(values) >= 2:
+            year_x_val = values[0]
+            year_y_val = values[1]
+            
+        self.logger.debug(f"Extracted values for {field}: {year_x_val}, {year_y_val}")
         return year_x_val, year_y_val
 
     def _extract_boolean_value(self, row: pd.Series, category_col: int) -> Tuple[Optional[str], Optional[str]]:
