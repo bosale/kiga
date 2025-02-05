@@ -1,0 +1,16 @@
+section_a_structure:
+  Verbindlichkeiten:
+    - "Kautionen"
+    - "Lieferantenverbindlichkeiten"
+    - "ausstehende Gehälter"
+    - "Verbindlichkeiten aus Steuern und Abgaben (offene Lohnnebenkosten)"
+    - "VK Mitglieder"
+    - "Bankverbindlichkeiten Konto Nr. XXXXXXX (Kontostand) 2)"
+    - "Bankdarlehen Konto Nr. XXXXXXX 2)"
+    - "Bankdarlehen Konto Nr. XXXXXXX 2)"
+    - "sonstige Darlehen 3)"
+    - "freies Feld 4)"
+    - "freies Feld 4)"
+
+sheet_patterns:
+  - "NB_Vermögensübersicht" 

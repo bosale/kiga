@@ -19,6 +19,7 @@ from extractors.personalausgaben_extractor import PersonalausgabenExtractor
 from extractors.sachausgaben_extractor import SachausgabenExtractor
 from extractors.einnahmen_extractor import EinnahmenExtractor
 from extractors.vermoegen_extractor import VermoegenExtractor
+from extractors.verbindlichkeiten_extractor import VerbindlichkeitenExtractor
 from utils import setup_logger
 
 
@@ -36,7 +37,8 @@ EXTRACTORS = {
     'personalausgaben': PersonalausgabenExtractor,
     'sachausgaben': SachausgabenExtractor,
     'einnahmen': EinnahmenExtractor,
-    'vermoegen': VermoegenExtractor
+    'vermoegen': VermoegenExtractor,
+    'verbindlichkeiten': VerbindlichkeitenExtractor
 }
 
 # Special config file names that don't follow the standard pattern
