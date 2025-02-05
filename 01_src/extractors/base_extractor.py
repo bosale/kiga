@@ -7,6 +7,8 @@ import pandas as pd
 from typing import Dict, List, Optional, Tuple
 import logging
 import traceback
+from datetime import datetime
+from utils.checkpoint_utils import handle_problematic_files
 
 class BaseExcelExtractor:
     def __init__(self, config: Dict, logger: Optional[logging.Logger] = None):
@@ -19,6 +21,7 @@ class BaseExcelExtractor:
         """
         self.config = config
         self.logger = logger or logging.getLogger(__name__)
+        self.issues = []  # List to track all issues (errors and warnings)
 
     def _get_preview_data(self, file_path: str | Path, sheet_name: str, nrows: int = 100) -> pd.DataFrame:
         """Get preview data from Excel file."""
@@ -27,6 +30,53 @@ class BaseExcelExtractor:
         except Exception as e:
             self.logger.error(f"Error reading preview data: {str(e)}")
             raise
+
+    def _log_issue(self, file_path: Path | str, issue_type: str, message: str, details: Optional[Dict] = None) -> None:
+        """
+        Log an issue with a file.
+        
+        Args:
+            file_path: Path to the problematic file
+            issue_type: Type of issue (e.g., 'ERROR', 'WARNING', 'NO_DATA')
+            message: Description of the issue
+            details: Additional details about the issue (optional)
+        """
+        file_path = Path(file_path)
+        issue = {
+            'timestamp': datetime.now().isoformat(),
+            'file_name': file_path.name,
+            'issue_type': issue_type,
+            'message': message,
+            'extractor_type': self.__class__.__name__,
+            'file_path': str(file_path)
+        }
+        if details:
+            issue.update(details)
+        self.issues.append(issue)
+        
+        # Log the issue
+        log_method = self.logger.error if issue_type == 'ERROR' else self.logger.warning
+        log_method(f"{issue_type} in {file_path.name}: {message}")
+
+    def _handle_processing_error(self, file_path: Path | str, error: Exception) -> Dict:
+        """
+        Handle and format processing errors.
+        
+        Args:
+            file_path: Path to file that caused the error
+            error: Exception that occurred
+            
+        Returns:
+            Dict: Formatted error information
+        """
+        error_info = {
+            'file_name': Path(file_path).name,
+            'error_type': type(error).__name__,
+            'error_message': str(error),
+            'traceback': traceback.format_exc()
+        }
+        self._log_issue(file_path, 'ERROR', str(error), error_info)
+        return error_info
 
     def process_files(
         self,
@@ -64,7 +114,6 @@ class BaseExcelExtractor:
                 self.logger.info(f"Debug mode: processing only {debug_limit} files")
             
             all_results = []
-            errors = []
             
             for file_path in file_paths:
                 try:
@@ -74,23 +123,34 @@ class BaseExcelExtractor:
                         all_results.append(df)
                         self.logger.info(f"Successfully extracted {len(df)} rows from {file_path.name}")
                     else:
-                        self.logger.warning(f"No data extracted from {file_path.name}")
+                        self._log_issue(file_path, 'NO_DATA', 'No data was extracted from this file')
                 except Exception as e:
-                    self.logger.error(f"Error processing {file_path.name}: {str(e)}")
-                    self.logger.error(f"Traceback: {traceback.format_exc()}")
-                    errors.append(self._handle_processing_error(file_path, e))
+                    self._handle_processing_error(file_path, e)
             
-            if errors:
-                error_df = pd.DataFrame(errors)
-                error_path = directory_path / f"errors_{self.__class__.__name__}.csv"
-                error_df.to_csv(str(error_path), index=False)
-                self.logger.warning(f"Errors logged to: {error_path}")
-                self.logger.warning(f"Files with errors: {[e['file_name'] for e in errors]}")
+            # Handle problematic files using the existing utility
+            if self.issues:
+                # Convert issues to the format expected by handle_problematic_files
+                problematic_files = [{
+                    'file_name': issue['file_name'],
+                    'file_path': issue['file_path'],
+                    'issue_type': issue['issue_type'],
+                    'message': issue['message'],
+                    'timestamp': issue['timestamp'],
+                    'extractor': issue['extractor_type']
+                } for issue in self.issues]
+                
+                handle_problematic_files(problematic_files, directory_path, self.__class__.__name__)
+                
+                # Log summary of issues
+                issue_summary = pd.DataFrame(self.issues)['issue_type'].value_counts()
+                self.logger.warning("\nIssue Summary:")
+                for issue_type, count in issue_summary.items():
+                    self.logger.warning(f"{issue_type}: {count} files")
             
             if not all_results:
                 self.logger.error("No files were successfully processed")
-                if errors:
-                    self.logger.error("All files failed due to errors. Check the error log for details.")
+                if self.issues:
+                    self.logger.error("All files failed. Check the problematic files log for details.")
                 raise ValueError("No files were successfully processed")
             
             final_df = pd.concat(all_results, ignore_index=True)
@@ -101,24 +161,6 @@ class BaseExcelExtractor:
             self.logger.error(f"Error in process_files: {str(e)}")
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             raise
-
-    def _handle_processing_error(self, file_path: Path | str, error: Exception) -> Dict:
-        """
-        Handle and format processing errors.
-        
-        Args:
-            file_path: Path to file that caused the error
-            error: Exception that occurred
-            
-        Returns:
-            Dict: Formatted error information
-        """
-        file_path = Path(file_path)
-        return {
-            'file_name': file_path.name,
-            'error_type': type(error).__name__,
-            'error_message': str(error)
-        }
 
     def _find_matching_sheet(self, xl: pd.ExcelFile, patterns: List[str]) -> str:
         """Find first sheet name matching any of the patterns."""
