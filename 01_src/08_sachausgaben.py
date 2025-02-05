@@ -8,6 +8,7 @@ from utils import (
     extract_section_data,
     load_structure
 )
+from extractors.sachausgaben_extractor import SachausgabenExtractor
 
 # Setup logger
 logger = setup_logger('sachausgaben')
@@ -24,15 +25,14 @@ def extract_sachausgaben(file_path: str | Path) -> pd.DataFrame:
     """
     logger.info(f"\nProcessing file: {file_path}")
     
+    # Load configuration
     structure = load_structure("sachausgaben_structure.yaml")
-    target_sheet = find_sheet_with_content(file_path, 'A. AUSGABEN')
-    logger.info(f"Found sheet: {target_sheet}")
     
-    if target_sheet is None:
-        raise ValueError(f"No sheet containing 'A. AUSGABEN' found in {file_path}")
+    # Initialize extractor
+    extractor = SachausgabenExtractor(structure)
     
-    df = pd.read_excel(file_path, sheet_name=target_sheet, header=None)
-    return extract_section_data(df, 'II', structure, file_path, logger)
+    # Extract data
+    return extractor.extract_data(file_path)
 
 def process_sachausgaben_files(
     directory_path: str | Path,
