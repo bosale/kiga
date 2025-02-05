@@ -15,6 +15,7 @@ from extractors.oeffnungszeiten_extractor import OeffnungszeitenExtractor
 from extractors.verpflegung_extractor import VerpflegungExtractor
 from extractors.anlagenverzeichnis_extractor import AnlagenverzeichnisExtractor
 from extractors.verteilungsschluessel_extractor import VerteilungsschluesselExtractor
+from extractors.personalausgaben_extractor import PersonalausgabenExtractor
 from utils import setup_logger
 
 
@@ -27,7 +28,8 @@ EXTRACTORS = {
     'oeffnungszeiten': OeffnungszeitenExtractor,
     'verpflegung': VerpflegungExtractor,
     'anlagenverzeichnis': AnlagenverzeichnisExtractor,
-    'verteilungsschluessel': VerteilungsschluesselExtractor
+    'verteilungsschluessel': VerteilungsschluesselExtractor,
+    'personalausgaben': PersonalausgabenExtractor
 }
 
 
