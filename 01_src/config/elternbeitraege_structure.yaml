@@ -1,0 +1,20 @@
+sheet_patterns:
+  - "*ELTERNBEITRÄGE*"
+
+verpflegung_structure:
+  "Verpflegung":
+    - "Verpflegung Halbtagsbetreuung"
+    - "Verpflegung Teilzeitbetreuung"
+    - "Verpflegung Ganztagsbetreuung"
+
+zusatzleistungen_structure:
+  "Zusatzleistungen":
+    - "Zusatzleistung 1"
+    - "Zusatzleistung 2"
+    - "Zusatzleistung 3"
+    - "Zusatzleistung 4"
+    - "Zusatzleistung 5"
+
+section_markers:
+  - "KINDERGÄRTEN UND KINDERGRUPPEN"
+  - "Einmalzahlungen" 
