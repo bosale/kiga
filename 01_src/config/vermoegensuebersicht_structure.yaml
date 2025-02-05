@@ -1,0 +1,27 @@
+section_a_structure:
+  Vermögen:
+    - "Betriebsausstattung (Buchwert) 1)"
+    - "Sparguthaben Erste"
+    - "Kassabestand"
+    - "Bank Erste AT592011128956917700"
+    - "Guthaben Konto Nr. XXXXXXX (Kontostand) 2)"
+    - "geleistete Anzahlungen"
+    - "ausstehende Elternbeiträge"
+    - "offene Förderbeiträge"
+    - "sonstige Forderungen"
+    - "freies Feld 4)"
+    - "freies Feld 4)"
+
+section_b_structure:
+  Verbindlichkeiten:
+    - "Kautionen"
+    - "Lieferantenverbindlichkeiten"
+    - "ausstehende Gehälter"
+    - "Verbindlichkeiten aus Steuern und Abgaben (offene Lohnnebenkosten)"
+    - "VK Mitglieder"
+    - "Bankverbindlichkeiten Konto Nr. XXXXXXX (Kontostand) 2)"
+    - "Bankdarlehen Konto Nr. XXXXXXX 2)"
+    - "Bankdarlehen Konto Nr. XXXXXXX 2)"
+    - "sonstige Darlehen 3)"
+    - "freies Feld 4)"
+    - "freies Feld 4)" 

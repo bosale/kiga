@@ -18,6 +18,7 @@ from extractors.verteilungsschluessel_extractor import VerteilungsschluesselExtr
 from extractors.personalausgaben_extractor import PersonalausgabenExtractor
 from extractors.sachausgaben_extractor import SachausgabenExtractor
 from extractors.einnahmen_extractor import EinnahmenExtractor
+from extractors.vermoegen_extractor import VermoegenExtractor
 from utils import setup_logger
 
 
@@ -34,10 +35,14 @@ EXTRACTORS = {
     'verteilungsschluessel': VerteilungsschluesselExtractor,
     'personalausgaben': PersonalausgabenExtractor,
     'sachausgaben': SachausgabenExtractor,
-    'einnahmen': EinnahmenExtractor
+    'einnahmen': EinnahmenExtractor,
+    'vermoegen': VermoegenExtractor
 }
 
-
+# Special config file names that don't follow the standard pattern
+CONFIG_FILE_NAMES = {
+    'vermoegen': 'vermoegensuebersicht_structure.yaml'
+}
 
 def parse_args():
     """Parse command line arguments."""
@@ -74,10 +79,14 @@ def parse_args():
 def get_default_paths(extraction_type: str) -> dict:
     """Get default paths relative to script location."""
     script_dir = Path(__file__).parent
+    
+    # Get the correct config file name
+    config_file = CONFIG_FILE_NAMES.get(extraction_type, f"{extraction_type}_structure.yaml")
+    
     return {
         'input_dir': script_dir.parent / "02_data" / "01_input",
         'output_dir': script_dir.parent / "02_data" / "02_output",
-        'config': script_dir / "config" / f"{extraction_type}_structure.yaml"
+        'config': script_dir / "config" / config_file
     }
 
 def validate_paths(paths: dict) -> None:
