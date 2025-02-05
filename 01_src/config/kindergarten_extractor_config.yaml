@@ -1,0 +1,47 @@
+# Configuration for kindergarten Excel data extraction
+
+# Sheet configuration
+sheet_patterns:
+  - "DECKBLATT"
+  - "NB_DECKBLATT"
+  - "*DECKBLATT"  # wildcard pattern to match any prefix
+  - "DECKBLATT*"  # wildcard pattern to match any suffix
+
+# Column configuration
+columns_to_use: "A:C"  # Changed to A:C since we need the first column
+
+# Section A configuration - Basic Information
+section_a_skiprows: 10  # Skip to where section A starts
+section_a_structure:
+  "Anzahl der Standorte (Stichtag 31.12.2023)":
+    - "..mit Kindergarten und Kindergruppen"
+  "Kinderanzahl alle Standorte (Jahresdurchschnitt)":
+    - "Kinder 0 - 6 Jahre"
+    - "Integrationskindergartengruppe"
+    - "Kinder mit erhöhtem Förderbedarf (EFB)"
+  "Gruppenanzahl aller Standorte (Stichtag 31.12.2023)":
+    - "Kleinkindergruppe (Krippe)"
+    - "Familiengruppe 0 - 6 Jahre"
+    - "Familiengruppe 2 - 6 Jahre"
+    - "Familiengruppe 3 - 10 Jahre"
+    - "Kindergartengruppe ganztags"
+    - "Kindergartengruppe halbtags"
+    - "Kindergruppe"
+    - "Integrationskleinkindergruppe"
+    - "Integrationskindergartengruppe"
+    - "Heilpädagogische Kindergartengruppe"
+
+# Section B configuration - Group Information
+section_b_skiprows: 17  # Skip to where section B starts
+section_b_nrows: 15
+section_b_structure:
+  "Anzahl der Standorte (Stichtag 31.12.2023)":
+    - "..mit Hort-, Teilhort- und Hortkindergruppen"
+  "Kinderanzahl alle Standorte (Jahresdurchschnitt)":
+    - "schulpflichtige Kinder"
+  "Gruppenanzahl aller Standorte (Stichtag 31.12.2023)":
+    - "Teilhortgruppe"
+    - "Hortgruppe"
+    - "Hortkindergruppe"
+    - "Integrationshortgruppe"
+    - "Heilpädagogische Hortgruppe"
