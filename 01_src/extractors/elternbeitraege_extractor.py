@@ -4,7 +4,7 @@ Concrete implementation of Excel extractor for Elternbeiträge (parent contribut
 
 from pathlib import Path
 import pandas as pd
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import numpy as np
 
 from .base_extractor import BaseExcelExtractor
@@ -19,17 +19,11 @@ class ElternbeitraegeExtractor(BaseExcelExtractor):
             
         Returns:
             pd.DataFrame: Extracted and transformed data
-            
-        Raises:
-            ValueError: If required sections are not found in config
         """
         self.logger.info(f"Starting data extraction from {file_path}")
         
         # Validate config structure
-        required_sections = ['verpflegung_structure', 'zusatzleistungen_structure']
-        for section in required_sections:
-            if section not in self.config:
-                raise ValueError(f"Missing required section '{section}' in config")
+        self.validate_config_sections(['verpflegung_structure', 'zusatzleistungen_structure'])
         
         # Find the correct sheet
         xl = pd.ExcelFile(file_path)

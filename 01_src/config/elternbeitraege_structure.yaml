@@ -1,8 +1,10 @@
 sheet_patterns:
-  - "*ELTERNBEITRÄGE*"
+  - "*NB_Standortinformation*"
+  - "*NB_Standortinformation*"
+  - "*NB_Standortinformation*"
 
 verpflegung_structure:
-  "Verpflegung":
+  "Verpflegung:":
     - "Verpflegung Halbtagsbetreuung"
     - "Verpflegung Teilzeitbetreuung"
     - "Verpflegung Ganztagsbetreuung"
