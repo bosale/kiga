@@ -56,8 +56,10 @@ def process_multiple_files(
     return pd.concat(all_results, ignore_index=True)
 
 if __name__ == "__main__":
-    directory_path = r"C:\Users\bol9002\Documents\kindergarten\02_data\01_input"
-    checkpoint_file = os.path.join(os.path.dirname(directory_path), "processed_files.json")
+    # Get the script's directory and construct relative paths
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    directory_path = os.path.normpath(os.path.join(script_dir, "..", "02_data", "01_input"))
+    checkpoint_file = os.path.join(os.path.dirname(directory_path), "processed_files_deckblatt.json")
     
     try:
         # Process files
@@ -72,10 +74,7 @@ if __name__ == "__main__":
         print(f"Total records: {len(combined_results)}")
         
         # Save to CSV
-        output_path = os.path.join(
-            os.path.dirname(directory_path),
-            "kindergarten_section_a_combined.csv"
-        )
+        output_path = os.path.join(os.path.dirname(directory_path), "02_output", "kindergarten_deckblatt.csv")
         combined_results.to_csv(output_path, index=False)
         print(f"\nResults saved to: {output_path}")
         
