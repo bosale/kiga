@@ -18,58 +18,86 @@ class KindergartenExcelExtractor(BaseExcelExtractor):
             
         Returns:
             pd.DataFrame: Extracted and transformed data
+            
+        Raises:
+            ValueError: If required sections are not found in config
         """
         self.logger.info(f"Starting data extraction from {file_path}")
         
-        # Extract section A data
-        section_a = self._extract_section(
-            file_path=file_path,
-            structure=self.config['section_a_structure']
-        )
-        self.logger.info(f"Section A extracted, got {len(section_a)} rows")
+        # Validate config structure
+        required_sections = ['section_a_structure', 'section_b_structure']
+        for section in required_sections:
+            if section not in self.config:
+                raise ValueError(f"Missing required section '{section}' in config")
         
-        # Extract section B data
-        section_b = self._extract_section(
-            file_path=file_path,
-            structure=self.config['section_b_structure']
-        )
-        self.logger.info(f"Section B extracted, got {len(section_b)} rows")
+        # Extract sections
+        sections_data = []
+        for section_name in required_sections:
+            section_df = self._extract_section(
+                file_path=file_path,
+                structure=self.config[section_name]
+            )
+            sections_data.append(section_df)
+            self.logger.info(f"{section_name} extracted, got {len(section_df)} rows")
         
         # Combine results
-        result = pd.concat([section_a, section_b], ignore_index=True)
+        result = pd.concat(sections_data, ignore_index=True)
         self.logger.info(f"Combined data has {len(result)} rows")
         
         return result
 
     @staticmethod
-    def _normalize_text(text) -> str:
-        """Normalize text by removing extra whitespace and handling NaN values."""
+    def _normalize_text(text: str | float | None) -> str:
+        """
+        Normalize text by removing extra whitespace and handling NaN values.
+        
+        Args:
+            text: Text to normalize
+            
+        Returns:
+            str: Normalized text
+        """
         if pd.isna(text):
             return ''
         return ' '.join(str(text).split())
 
-    def _find_category_position(self, df: pd.DataFrame, category: str) -> Tuple[Optional[int], Optional[int]]:
+    def _find_category_position(
+        self,
+        df: pd.DataFrame,
+        category: str,
+        log_partial_matches: bool = True
+    ) -> Tuple[Optional[int], Optional[int]]:
         """
         Find the position (row and column) of a category in the DataFrame.
         
         Args:
             df: DataFrame to search in
             category: Category to find
+            log_partial_matches: Whether to log partial matches for debugging
             
         Returns:
-            Tuple of (row_index, column_index) or (None, None) if not found
+            Tuple[Optional[int], Optional[int]]: Row and column indices, or (None, None) if not found
         """
         normalized_category = self._normalize_text(category)
         
         for col in df.columns:
             mask = df[col].apply(self._normalize_text) == normalized_category
             if mask.any():
-                return mask.idxmax(), col
+                return mask.idxmax(), df.columns.get_loc(col)
+        
+        if log_partial_matches:
+            self._log_partial_matches(df, category)
                 
         return None, None
 
-    def _log_partial_matches(self, df: pd.DataFrame, category: str):
-        """Log partial matches for debugging purposes."""
+    def _log_partial_matches(self, df: pd.DataFrame, category: str) -> None:
+        """
+        Log partial matches for debugging purposes.
+        
+        Args:
+            df: DataFrame to search in
+            category: Category to find partial matches for
+        """
         normalized_category = self._normalize_text(category)
         self.logger.info("No exact match found, looking for partial matches:")
         
@@ -80,17 +108,47 @@ class KindergartenExcelExtractor(BaseExcelExtractor):
                 if normalized_val and (normalized_category in normalized_val or normalized_val in normalized_category):
                     self.logger.info(f"Found partial match at row {idx}, col {col}: '{normalized_val}'")
 
-    def _get_preview_data(self, file_path: Path | str, sheet_name: str) -> pd.DataFrame:
-        """Read preview data from Excel file."""
+    def _get_preview_data(
+        self,
+        file_path: Path | str,
+        sheet_name: str,
+        nrows: int = 50
+    ) -> pd.DataFrame:
+        """
+        Read preview data from Excel file.
+        
+        Args:
+            file_path: Path to Excel file
+            sheet_name: Name of sheet to read
+            nrows: Number of rows to read
+            
+        Returns:
+            pd.DataFrame: Preview data
+        """
         return pd.read_excel(
             file_path,
             sheet_name=sheet_name,
-            nrows=50,
+            nrows=nrows,
             header=None
         )
 
-    def _transform_data(self, df: pd.DataFrame, structure: Dict, file_path: Path | str) -> pd.DataFrame:
-        """Transform the extracted data according to the structure."""
+    def _transform_data(
+        self,
+        df: pd.DataFrame,
+        structure: Dict,
+        file_path: Path | str
+    ) -> pd.DataFrame:
+        """
+        Transform the extracted data according to the structure.
+        
+        Args:
+            df: DataFrame to transform
+            structure: Structure definition from config
+            file_path: Source file path for reference
+            
+        Returns:
+            pd.DataFrame: Transformed data
+        """
         transformed_rows = []
         
         for main_category, subcategories in structure.items():
