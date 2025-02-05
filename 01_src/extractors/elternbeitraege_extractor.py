@@ -68,50 +68,71 @@ class ElternbeitraegeExtractor(BaseExcelExtractor):
                 return idx
         return None
     
-    def _extract_verpflegung(self, df: pd.DataFrame) -> List[Dict]:
-        """Extract Verpflegung (catering) related entries."""
-        data = []
-        verpflegung_types = self.config['verpflegung_structure']['Verpflegung']
+    def _extract_section_data(self, df: pd.DataFrame, category: str, section_start_marker: Optional[str] = None, 
+                            valid_types: Optional[List[str]] = None, section_end_marker: Optional[str] = None) -> List[Dict]:
+        """Generic method to extract data from a section.
         
-        for _, row in df.iterrows():
-            category = row.iloc[0]
-            if pd.isna(category):
+        Args:
+            df: DataFrame containing the data
+            category: Category name for the extracted data
+            section_start_marker: Optional marker to find the section start
+            valid_types: List of valid types for this category
+            section_end_marker: Optional marker to find the section end
+            
+        Returns:
+            List of dictionaries containing the extracted data
+        """
+        data = []
+        
+        # If we have a section start marker, find the starting index
+        start_idx = 0
+        if section_start_marker:
+            start_indices = df[df.iloc[:, 0] == section_start_marker].index
+            if not len(start_indices):
+                return data
+            start_idx = start_indices[0] + 1
+        
+        # Process each row
+        for idx in range(start_idx, len(df)):
+            row = df.iloc[idx]
+            entry_type = row.iloc[0]
+            
+            if pd.isna(entry_type):
                 continue
                 
-            if category.strip() in verpflegung_types:
-                data.append({
-                    'category': 'Verpflegung',
-                    'type': category.strip(),
-                    'amount': row['Betrag in EUR'] if 'Betrag in EUR' in row.index else None,
-                    'frequency': row['Anzahl pro Jahr\n(z.B. 12 mal)'] 
-                        if 'Anzahl pro Jahr\n(z.B. 12 mal)' in row.index else None
-                })
+            entry_type = entry_type.strip()
+            
+            # Check for section end if provided
+            if section_end_marker and entry_type.startswith(section_end_marker):
+                break
+                
+            # Check if this is a valid type
+            if valid_types and entry_type not in valid_types:
+                continue
+                
+            data.append({
+                'category': category,
+                'type': entry_type,
+                'amount': row['Betrag in EUR'] if 'Betrag in EUR' in row.index else row.iloc[2],
+                'frequency': row['Anzahl pro Jahr\n(z.B. 12 mal)'] if 'Anzahl pro Jahr\n(z.B. 12 mal)' in row.index else row.iloc[3]
+            })
         
         return data
     
+    def _extract_verpflegung(self, df: pd.DataFrame) -> List[Dict]:
+        """Extract Verpflegung (catering) related entries."""
+        verpflegung_types = self.config['verpflegung_structure']['Verpflegung:']
+        return self._extract_section_data(
+            df, 
+            category='Verpflegung',
+            valid_types=verpflegung_types
+        )
+    
     def _extract_zusatzleistungen(self, df: pd.DataFrame) -> List[Dict]:
         """Extract Zusatzleistungen (additional services) entries."""
-        data = []
-        
-        # Find where Zusatzleistungen section starts
-        zusatz_start = df[df.iloc[:, 0] == 'Zusatzleistungen'].index
-        if not len(zusatz_start):
-            return data
-            
-        zusatz_idx = zusatz_start[0]
-        for idx in range(zusatz_idx + 1, len(df)):
-            row = df.iloc[idx]
-            if pd.isna(row.iloc[0]):
-                continue
-                
-            if row.iloc[0].startswith('Einmalzahlungen'):  # Stop at Einmalzahlungen
-                break
-                
-            data.append({
-                'category': 'Zusatzleistungen',
-                'type': row.iloc[0].strip(),
-                'amount': row.iloc[2] if not pd.isna(row.iloc[2]) else None,
-                'frequency': row.iloc[3] if not pd.isna(row.iloc[3]) else None
-            })
-        
-        return data 
+        return self._extract_section_data(
+            df,
+            category='Zusatzleistungen',
+            section_start_marker='Zusatzleistungen (bitte detailliert anführen):',
+            section_end_marker='Einmalzahlungen'
+        ) 

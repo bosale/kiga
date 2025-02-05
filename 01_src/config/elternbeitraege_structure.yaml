@@ -1,7 +1,7 @@
 sheet_patterns:
+  - "NB_Standortinformation"
   - "*NB_Standortinformation*"
-  - "*NB_Standortinformation*"
-  - "*NB_Standortinformation*"
+
 
 verpflegung_structure:
   "Verpflegung:":
@@ -11,11 +11,11 @@ verpflegung_structure:
 
 zusatzleistungen_structure:
   "Zusatzleistungen":
-    - "Zusatzleistung 1"
-    - "Zusatzleistung 2"
-    - "Zusatzleistung 3"
-    - "Zusatzleistung 4"
-    - "Zusatzleistung 5"
+    - "Montessori"
+    - "Englisch"
+    - "Musik"
+    - "erhöhter Betreuungsschlüssel"
+
 
 section_markers:
   - "KINDERGÄRTEN UND KINDERGRUPPEN"
