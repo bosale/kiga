@@ -1,0 +1,37 @@
+sheet_patterns:
+  - "NB_Anlagenverzeichnis"
+
+header_marker: "Inventarbezeichnung"
+
+columns:
+  - name: "Inventarbezeichnung"
+    original_name: "Inventarbezeichnung 1)"
+    type: "str"
+  - name: "Lieferant"
+    original_name: "Lieferant 2)"
+    type: "str"
+  - name: "Anschaffung (Datum)"
+    original_name: "Anschaffung  (Datum) 3)"
+    type: "date"
+    format: "%d.%m.%Y"
+  - name: "Anschaffungswert"
+    original_name: "Anschaffungswert 4)"
+    type: "float"
+  - name: "Nutzungsdauer (Jahre)"
+    original_name: "Nutzungsdauer (Jahre) 5)"
+    type: "float"
+  - name: "kumulierte Abschreibung bis 31.12.2022"
+    original_name: "kumulierte Abschreibung  bis 31.12.2022 6)"
+    type: "float"
+  - name: "Buchwert 31.12.2022"
+    original_name: "Buchwert 31.12.2022 7)"
+    type: "float"
+  - name: "Abschreibung 2023"
+    original_name: "Abschreibung  2023 8)"
+    type: "float"
+  - name: "Buchwert 31.12.2023"
+    original_name: "Buchwert 31.12.2023 9)"
+    type: "float"
+
+exclude_patterns:
+  - "GESAMT" 
