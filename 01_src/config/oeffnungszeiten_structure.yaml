@@ -1,0 +1,42 @@
+---
+# Configuration for Öffnungszeiten (opening times) data extraction
+
+# Sheet patterns to identify the correct sheet
+sheet_patterns:
+  - "NB_Standortinformation"
+  - "*NB_Standortinformation*"
+
+# Column mappings (0-based index)
+columns:
+  gruppe: 0        # Column A
+  stunden_woche: 1 # Column B
+  wochentage: 2    # Column C
+  stunden_tag: 3   # Column D
+  oeffnungszeiten: 4  # Column E
+
+# Output schema
+output_columns:
+  - Gruppe
+  - Stunden_pro_Woche
+  - Wochentage
+  - Stunden_pro_Tag
+  - Oeffnungszeiten
+  - source_file
+
+# Target groups that should be extracted
+target_groups:
+  - "Kleinkindergruppe (Krippe)"
+  - "Familiengruppe 0 - 6"
+  - "Familiengruppe 2 - 6"
+  - "Familiengruppe 3 - 10, mit Teilhort"
+  - "Familiengruppe 3 - 10, ohne Teilhort"
+  - "Kindergartengruppe ganztags"
+  - "Kindergartengruppe halbtags"
+  - "Teilhortgruppe"
+  - "Hortgruppe"
+  - "Kindergruppe"
+  - "Hortkindergruppe"
+  - "Integrationskleinkindergruppe"
+  - "Integrationskindergartengruppe"
+  - "Heilpädagogische Kindergartengruppe"
+  - "Heilpädagogische Hortgruppe" 

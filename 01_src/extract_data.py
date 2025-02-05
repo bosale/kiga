@@ -11,6 +11,7 @@ from extractors.kindergarten_extractor import KindergartenExcelExtractor
 from extractors.elternbeitraege_extractor import ElternbeitraegeExtractor
 from extractors.zusatzangaben_extractor import ZusatzangabenExtractor
 from extractors.schliesszeiten_extractor import SchliesszeitenExtractor
+from extractors.oeffnungszeiten_extractor import OeffnungszeitenExtractor
 from utils import setup_logger
 
 
@@ -19,7 +20,8 @@ EXTRACTORS = {
     'deckblatt': KindergartenExcelExtractor,
     'elternbeitraege': ElternbeitraegeExtractor,
     'zusatzangaben': ZusatzangabenExtractor,
-    'schliesszeiten': SchliesszeitenExtractor
+    'schliesszeiten': SchliesszeitenExtractor,
+    'oeffnungszeiten': OeffnungszeitenExtractor
 }
 
 
