@@ -7,11 +7,6 @@ sheet_patterns:
   - "*DECKBLATT"  # wildcard pattern to match any prefix
   - "DECKBLATT*"  # wildcard pattern to match any suffix
 
-# Column configuration
-columns_to_use: "A:C"  # Changed to A:C since we need the first column
-
-# Section A configuration - Basic Information
-section_a_skiprows: 10  # Skip to where section A starts
 section_a_structure:
   "Anzahl der Standorte (Stichtag 31.12.2023)":
     - "..mit Kindergarten und Kindergruppen"
@@ -31,9 +26,6 @@ section_a_structure:
     - "Integrationskindergartengruppe"
     - "Heilpädagogische Kindergartengruppe"
 
-# Section B configuration - Group Information
-section_b_skiprows: 17  # Skip to where section B starts
-section_b_nrows: 15
 section_b_structure:
   "Anzahl der Standorte (Stichtag 31.12.2023)":
     - "..mit Hort-, Teilhort- und Hortkindergruppen"
