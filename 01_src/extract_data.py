@@ -9,12 +9,14 @@ import logging
 import yaml
 from extractors.kindergarten_extractor import KindergartenExcelExtractor
 from extractors.elternbeitraege_extractor import ElternbeitraegeExtractor
+from extractors.zusatzangaben_extractor import ZusatzangabenExtractor
 from utils import setup_logger
 
 # Map of extraction types to their respective extractor classes
 EXTRACTORS = {
     'deckblatt': KindergartenExcelExtractor,
-    'elternbeitraege': ElternbeitraegeExtractor
+    'elternbeitraege': ElternbeitraegeExtractor,
+    'zusatzangaben': ZusatzangabenExtractor
 }
 
 def parse_args():

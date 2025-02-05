@@ -1,0 +1,42 @@
+---
+# Configuration for Zusatzangaben data extraction
+
+# Sheet patterns to identify the correct sheet
+sheet_patterns:
+  - "ZUSATZANGABEN"
+  - "*ZUSATZANGABEN*"
+
+# Column mappings (0-based index)
+columns:
+  name_eintrag: 0  # Column A
+  eintrag: 2       # Column C
+  erlaeuterung: 5  # Column F
+
+# Output schema
+output_columns:
+  - Name_Eintrag
+  - Eintrag
+  - Erlaeuterung
+  - source_file
+  - normalized_key
+
+# Main section structure - list of expected questions
+zusatzangaben:
+  - "Fanden im Geschäftsjahr Generalversammlungen oder Versammlungen des Vorstands statt? (Ja/Nein)"
+  - "Fanden in den letzten fünf Jahren Mitgliederversammlungen statt? (Ja/Nein)"
+  - "Wurden im Geschäftsjahr neue Insichgeschäfte abgeschlossen? (Ja/Nein)"
+  - "Gab es im Geschäftsjahr unterjährig negative Kassastände? (Ja/Nein)"
+  - "Gibt es Regelungen für Insichgeschäfte? (Ja/Nein)"
+  - "Ist das maßgebende Regelwerk zur Erstellung der Einnahmen-Ausgaben-Rechnung und der Vermögensübersicht vom Leitungsorgan schriftlich festgehalten? (Ja/Nein)"
+  - "Wurde im Geschäftsjahr ein Fahrzeug verwendet und Ausgaben dafür im Jahresabschluss erfasst? (Ja/Nein)"
+  - "Wurden im Geschäftsjahr Anschaffungen getätigt, oder Dienstleistungen beauftragt, die einen jeweiligen Einzelwert von EUR 1.000,00 übersteigen? (Ja/Nein)"
+  - "Hat die Trägerorganisation bestehende Leasingverträge? (Ja/Nein)"
+  - "Ist sichergestellt, dass die/der Fördernehmer*in während des aufrechten Förderverhältnisses unverzüglich Meldung erstattet, wenn sie/er oder ein vertretungsbefugtes Organ wegen Fördermissbrauch gemäß § 153b StGB oder eines Korruptionsdeliktes gemäß den §§ 302 bis 309 StGB rechtskräftig verurteilt wurde? Kontrollsystem implementiert? (Ja/Nein)"
+  - "Ist sichergestellt, dass den Mitarbeiter*innen der Fördernehmerin bzw. des Fördernehmers die Korruptionstatbestände des Strafgesetzbuches bekannt sind und die Korruptionstatbestände sowie die Strafbarkeit zumindest einmal jährlich in Erinnerung gerufen werden? (Ja/Nein)"
+  - "Ist sichergestellt, dass sich die/der Förderwerber*in oder ein vertretungsbefugtes Organ, sofern sie/er Mitglied eines genehmigenden Organs nach der Wiener Stadtverfassung (z.B. Mitglied des zuständigen Gemeinderatsausschusses, Mitglied des Gemeinderates) ist, in der maßgebenden Sitzung des jeweiligen Organs, welches die Förderung beschließt, für befangen erklärt und der Stimme enthält? (Ja/Nein)"
+  - "Ist sichergestellt, dass sich die/der Förderwerber*in der Fördergeberin unverzüglich Meldung erstattet, wenn sie/er oder ein vertretungsbefugtes Organ während des aufrechten Förderverhältnisses Mitglied eines allgemeinen Vertretungskörpers wird oder ein sonstiges politisches Amt antritt? (Ja/Nein)"
+  - "Ist das Vier-Augen-Prinzip bei Auszahlungen/Überweisungen, Beschaffungen und Leistungsvergaben sowie bei der Abrechnung (Nachweis der widmungsgemäßen Verwendung) sichergestellt? (Ja/Nein)"
+  - "Ist festgelegt, in welcher Form die für die Überprüfung der widmungsgemäßen Verwendung der Förderung erforderlichen Unterlagen (Aufzeichnungen, Buchungsjournale, Belege, etc.) dokumentiert und aufbewahrt werden müssen (für einen Zeitraum von mindestens 7 Jahren nach der letzten Auszahlung)? (Ja/Nein)"
+  - "Gibt es Regelungen für Beschaffungen und Leistungsvergaben? (Ja/Nein)"
+  - "Ist sichergestellt, dass den Mitarbeiter*innen der Fördernehmerin bzw. des Fördernehmers über das Verbot der Diskriminierung (§ 2 Wiener Antidiskriminierungsgesetz) und Benachteiligung (§ 4 Abs. 3 Wiener Antidiskriminierungsgesetzt) informiert sind und in regelmäßigen Abständen daran erinnert werden? (Ja/Nein)"
+  - "Gibt es ein Kinderschutzkonzept? (Ja/Nein)" 
