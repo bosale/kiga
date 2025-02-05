@@ -113,11 +113,14 @@ class BaseExcelExtractor:
                 file_paths = file_paths[:debug_limit]
                 self.logger.info(f"Debug mode: processing only {debug_limit} files")
             
+            total_files = len(file_paths)
+            self.logger.info(f"Found {total_files} files to process")
+            
             all_results = []
             
-            for file_path in file_paths:
+            for idx, file_path in enumerate(file_paths, 1):
                 try:
-                    self.logger.info(f"Processing file: {file_path.name}")
+                    self.logger.info(f"Processing file [{idx}/{total_files}]: {file_path.name}")
                     df = self.extract_data(file_path)
                     if len(df) > 0:
                         all_results.append(df)
@@ -154,7 +157,9 @@ class BaseExcelExtractor:
                 raise ValueError("No files were successfully processed")
             
             final_df = pd.concat(all_results, ignore_index=True)
-            self.logger.info(f"Final dataset has {len(final_df)} rows from {final_df['source_file'].nunique()} files")
+            self.logger.info(f"\nProcessing complete!")
+            self.logger.info(f"Successfully processed: {final_df['source_file'].nunique()}/{total_files} files")
+            self.logger.info(f"Total records extracted: {len(final_df)}")
             return final_df
             
         except Exception as e:
