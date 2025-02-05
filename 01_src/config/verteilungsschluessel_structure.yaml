@@ -1,0 +1,29 @@
+sheet_patterns:
+  - "DECKBLATT"
+
+section_marker: "C. VERTEILUNGSSCHLÜSSEL"
+
+columns:
+  - name: source_file
+    type: str
+  - name: kindergarten_2022
+    type: float
+  - name: kindergarten_2023
+    type: float
+  - name: kindergarten_2024
+    type: float
+  - name: hort_2022
+    type: float
+  - name: hort_2023
+    type: float
+  - name: hort_2024
+    type: float
+
+headers:
+  kindergarten: "Kindergarten"
+  hort: "Hort"
+
+years:
+  - "2022"
+  - "2023"
+  - "2024" 
