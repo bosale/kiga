@@ -17,7 +17,9 @@ from extractors.anlagenverzeichnis_extractor import AnlagenverzeichnisExtractor
 from extractors.verteilungsschluessel_extractor import VerteilungsschluesselExtractor
 from extractors.personalausgaben_extractor import PersonalausgabenExtractor
 from extractors.sachausgaben_extractor import SachausgabenExtractor
+from extractors.einnahmen_extractor import EinnahmenExtractor
 from utils import setup_logger
+
 
 
 # Map of extraction types to their respective extractor classes
@@ -31,8 +33,10 @@ EXTRACTORS = {
     'anlagenverzeichnis': AnlagenverzeichnisExtractor,
     'verteilungsschluessel': VerteilungsschluesselExtractor,
     'personalausgaben': PersonalausgabenExtractor,
-    'sachausgaben': SachausgabenExtractor
+    'sachausgaben': SachausgabenExtractor,
+    'einnahmen': EinnahmenExtractor
 }
+
 
 
 def parse_args():

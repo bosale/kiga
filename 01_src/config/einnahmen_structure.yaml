@@ -1,0 +1,55 @@
+# Configuration for income (Einnahmen) data extraction
+
+# Sheet patterns to identify the correct sheet
+sheet_patterns:
+  - "NB_KIGA"
+  - "*NB_KIGA*"
+  - "NB_KKG"
+  - "*NB_KKG*"
+
+# Section identifier
+section_id: "I. BETRIEBLICHE EINNAHMEN"
+
+# Section identifier patterns (used by extractor)
+section_patterns:
+  - "I."
+  - "I"
+  - "BETRIEBLICHE EINNAHMEN"
+  - "I. BETRIEBLICHE EINNAHMEN"
+  - "I BETRIEBLICHE EINNAHMEN"
+  - "EINNAHMEN"
+  - "B. EINNAHMEN"
+
+# Output column configuration
+output_columns:
+  - source_file
+  - category
+  - subcategory
+  - detail
+  - value_2022
+  - value_2023
+  - comment
+
+# Categories and their items
+categories:
+  "1. FÖRDERUNGEN":
+    description: "Funding"
+    items:
+      - "Förderungen durch das Arbeitsmarktservice (AMS)"
+      - "Förderungen durch Bundesministerien/weitere Stellen"
+      - "Magistratsabteilung 11 Verpflegung"
+
+  "2. ELTERNBEITRÄGE":
+    description: "Parent contributions"
+    items:
+      - "Zweckgebundene Elternbeiträge für Verpflegung"
+      - "Zweckgebundene Elternbeiträge für Zusatzleistungen"
+      - "Zweckgebundene Elternbeiträge für Ausflüge"
+      - "Einschreibgebühren"
+
+  "3. SONSTIGE EINNAHMEN":
+    description: "Other income"
+    items:
+      - "Versicherungsvergütungen"
+      - "Spenden"
+      - "weitere sonstige Einnahmen (bitte einzeln auflisten!)" 
