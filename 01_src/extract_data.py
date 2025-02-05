@@ -12,6 +12,7 @@ from extractors.elternbeitraege_extractor import ElternbeitraegeExtractor
 from extractors.zusatzangaben_extractor import ZusatzangabenExtractor
 from extractors.schliesszeiten_extractor import SchliesszeitenExtractor
 from extractors.oeffnungszeiten_extractor import OeffnungszeitenExtractor
+from extractors.verpflegung_extractor import VerpflegungExtractor
 from utils import setup_logger
 
 
@@ -21,7 +22,8 @@ EXTRACTORS = {
     'elternbeitraege': ElternbeitraegeExtractor,
     'zusatzangaben': ZusatzangabenExtractor,
     'schliesszeiten': SchliesszeitenExtractor,
-    'oeffnungszeiten': OeffnungszeitenExtractor
+    'oeffnungszeiten': OeffnungszeitenExtractor,
+    'verpflegung': VerpflegungExtractor
 }
 
 
