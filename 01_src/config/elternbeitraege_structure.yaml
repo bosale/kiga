@@ -1,6 +1,5 @@
 sheet_patterns:
-  - "NB_Standortinformation"
-  - "*NB_Standortinformation*"
+  - "Standortinformation"
 
 
 verpflegung_structure:

@@ -6,35 +6,36 @@ from pathlib import Path
 import pandas as pd
 from typing import Dict, List, Optional
 import numpy as np
+import logging
 
 from .base_extractor import BaseExcelExtractor
 
 class ElternbeitraegeExtractor(BaseExcelExtractor):
-    def extract_data(self, file_path: str | Path) -> pd.DataFrame:
+    def __init__(self, config: Dict, logger: Optional[logging.Logger] = None):
+        super().__init__(config, logger)
+        # Validate config structure at initialization
+        self.validate_config_sections(['verpflegung_structure', 'zusatzleistungen_structure', 'section_markers'])
+
+    def process_sheet(self, file_path: Path, sheet_name: str) -> pd.DataFrame:
         """
-        Extract parent contribution data from Excel file.
+        Process a single sheet from an Excel file.
         
         Args:
-            file_path: Path to Excel file
+            file_path: Path to the Excel file
+            sheet_name: Name of the sheet to process
             
         Returns:
-            pd.DataFrame: Extracted and transformed data
+            pd.DataFrame: Extracted data from the sheet
         """
-        self.logger.info(f"Starting data extraction from {file_path}")
-        
-        # Validate config structure
-        self.validate_config_sections(['verpflegung_structure', 'zusatzleistungen_structure'])
-        
-        # Find the correct sheet
-        xl = pd.ExcelFile(file_path)
-        sheet_name = self._find_matching_sheet(xl, self.config['sheet_patterns'])
+        self.logger.info(f"Processing sheet {sheet_name} from {file_path}")
         
         # Find the starting row containing "KINDERGÄRTEN UND KINDERGRUPPEN"
         preview_df = self._get_preview_data(file_path, sheet_name)
         start_row = self._find_section_start(preview_df, self.config['section_markers'][0])
         
         if start_row is None:
-            raise ValueError(f"Could not find section start marker in {file_path}")
+            self.logger.warning(f"Could not find section start marker in sheet {sheet_name}")
+            return pd.DataFrame()
         
         # Read the data starting from the identified row
         df = pd.read_excel(
@@ -57,7 +58,7 @@ class ElternbeitraegeExtractor(BaseExcelExtractor):
         result_df = result_df.replace({np.nan: None})
         result_df['source_file'] = Path(file_path).stem
         
-        self.logger.info(f"Extracted {len(result_df)} rows of data")
+        self.logger.info(f"Extracted {len(result_df)} rows from sheet {sheet_name}")
         return result_df
     
     def _find_section_start(self, df: pd.DataFrame, marker: str) -> Optional[int]:

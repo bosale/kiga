@@ -167,13 +167,42 @@ class BaseExcelExtractor:
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
-    def _find_matching_sheet(self, xl: pd.ExcelFile, patterns: List[str]) -> str:
-        """Find first sheet name matching any of the patterns."""
+    def _find_matching_sheet(self, xl: pd.ExcelFile, patterns: List[str]) -> List[str]:
+        """
+        Find sheet names matching the patterns, using exact match first, then fuzzy match.
+        Returns a list of matching sheets.
+        """
         try:
+            matching_sheets = []
+            
+            # Step 1: Try exact matching first
+            for sheet in xl.sheet_names:
+                for pattern in patterns:
+                    if str(sheet).upper() == str(pattern).upper():
+                        self.logger.info(f"Found exact match for sheet: {sheet}")
+                        return [sheet]  # Return single exact match immediately
+            
+            # Step 2: If no exact match, try fuzzy matching with "Standortinformation"
+            if "Standortinformation" in patterns:
+                fuzzy_matches = []
+                for sheet in xl.sheet_names:
+                    if "Standortinformation".upper() in str(sheet).upper():
+                        fuzzy_matches.append(sheet)
+                
+                if fuzzy_matches:
+                    self.logger.info(f"Found fuzzy match(es) for Standortinformation: {fuzzy_matches}")
+                    return fuzzy_matches
+            
+            # Step 3: If still no match, try the original pattern matching
             for sheet in xl.sheet_names:
                 for pattern in patterns:
                     if str(pattern).upper() in str(sheet).upper():
-                        return sheet
+                        matching_sheets.append(sheet)
+            
+            if matching_sheets:
+                self.logger.info(f"Found pattern match(es) for sheets: {matching_sheets}")
+                return matching_sheets
+            
             raise ValueError(f"No sheet matching patterns {patterns}")
         except Exception as e:
             self.logger.error(f"Error finding matching sheet: {str(e)}")
@@ -235,9 +264,25 @@ class BaseExcelExtractor:
             if section not in self.config:
                 raise ValueError(f"Missing required section '{section}' in config")
 
+    def process_sheet(self, file_path: Path, sheet_name: str) -> pd.DataFrame:
+        """
+        Process a single sheet from an Excel file.
+        To be implemented by child classes.
+        
+        Args:
+            file_path: Path to the Excel file
+            sheet_name: Name of the sheet to process
+            
+        Returns:
+            pd.DataFrame: Extracted data from the sheet
+        """
+        raise NotImplementedError("Child classes must implement process_sheet method")
+
     def extract_data(self, file_path: str | Path) -> pd.DataFrame:
         """
-        Extract data from Excel file. To be implemented by child classes.
+        Extract data from Excel file.
+        This implementation handles multiple sheets and combines their results.
+        Child classes should implement process_sheet instead.
         
         Args:
             file_path: Path to Excel file
@@ -245,4 +290,33 @@ class BaseExcelExtractor:
         Returns:
             pd.DataFrame: Extracted and transformed data
         """
-        raise NotImplementedError("Child classes must implement extract_data method")
+        try:
+            file_path = Path(file_path)
+            xl = pd.ExcelFile(file_path)
+            
+            # Find matching sheets
+            matching_sheets = self._find_matching_sheet(xl, self.config['sheet_patterns'])
+            
+            all_results = []
+            for sheet_name in matching_sheets:
+                try:
+                    df = self.process_sheet(file_path, sheet_name)
+                    if len(df) > 0:
+                        # Add sheet name to source information
+                        df['source_sheet'] = sheet_name
+                        all_results.append(df)
+                        self.logger.info(f"Successfully extracted {len(df)} rows from sheet '{sheet_name}'")
+                    else:
+                        self._log_issue(file_path, 'NO_DATA', f'No data was extracted from sheet {sheet_name}')
+                except Exception as e:
+                    self._log_issue(file_path, 'ERROR', f'Error processing sheet {sheet_name}: {str(e)}')
+                    continue
+            
+            if not all_results:
+                return pd.DataFrame()
+                
+            return pd.concat(all_results, ignore_index=True)
+            
+        except Exception as e:
+            self._handle_processing_error(file_path, e)
+            return pd.DataFrame()
