@@ -75,6 +75,13 @@ Automatische Typinferenz:
 
 - Die Typinferenz kann bei Bedarf überschrieben werden durch Angabe spezifischer SQL-Typen im Code.
 
+Datenbank-Integration und Views:
+- Die extrahierten CSV-Dateien werden zunächst in temporäre Staging-Tabellen in der Datenbank geladen
+- Auf diesen Staging-Tabellen sind Views definiert, die:
+  * Die Spaltennamen aus den CSV-Dateien auf die in Confluence/Google Sheets (https://docs.google.com/spreadsheets/d/1npkUnocH60_lKiGg9hPn7R2kqNipEtScvE0NTf1HCsU/edit?gid=0#gid=0) definierten Tabellen- und Spaltennamen mappen
+  * Die Datenstruktur gemäß den in Confluence dokumentierten Anforderungen transformieren
+- Diese Views dienen als Schnittstelle zwischen den Rohdaten und der finalen Datenbankstruktur
+
 Verwendung
 ---------
 Das Hauptskript extract_data.py kann mit verschiedenen Parametern aufgerufen werden:

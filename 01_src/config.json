@@ -1,5 +1,5 @@
 {
-    "server": "AVZ276\\SQLEXPRESS01",
+    "server": "",
     "database": "DWH_Kindergarten",
     "schema_name": "dbo",
     "driver": "ODBC Driver 17 for SQL Server",
