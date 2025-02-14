@@ -21,24 +21,25 @@ from extractors.einnahmen_extractor import EinnahmenExtractor
 from extractors.vermoegen_extractor import VermoegenExtractor
 from extractors.verbindlichkeiten_extractor import VerbindlichkeitenExtractor
 from utils import setup_logger
-
-
+from utils.db_utils import write_to_sql
+import sql_data_types
 
 # Map of extraction types to their respective extractor classes
+# Optional SQL types can be provided to override automatic type inference
 EXTRACTORS = {
-    'deckblatt': KindergartenExcelExtractor,
-    'elternbeitraege': ElternbeitraegeExtractor,
-    'zusatzangaben': ZusatzangabenExtractor,
-    'schliesszeiten': SchliesszeitenExtractor,
-    'oeffnungszeiten': OeffnungszeitenExtractor,
-    'verpflegung': VerpflegungExtractor,
-    'anlagenverzeichnis': AnlagenverzeichnisExtractor,
-    'verteilungsschluessel': VerteilungsschluesselExtractor,
-    'personalausgaben': PersonalausgabenExtractor,
-    'sachausgaben': SachausgabenExtractor,
-    'einnahmen': EinnahmenExtractor,
-    'vermoegen': VermoegenExtractor,
-    'verbindlichkeiten': VerbindlichkeitenExtractor
+    'deckblatt': {'class': KindergartenExcelExtractor, 'sql_types': None},
+    'elternbeitraege': {'class': ElternbeitraegeExtractor, 'sql_types': None},
+    'zusatzangaben': {'class': ZusatzangabenExtractor, 'sql_types': None},
+    'schliesszeiten': {'class': SchliesszeitenExtractor, 'sql_types': None},
+    'oeffnungszeiten': {'class': OeffnungszeitenExtractor, 'sql_types': None},
+    'verpflegung': {'class': VerpflegungExtractor, 'sql_types': None},
+    'anlagenverzeichnis': {'class': AnlagenverzeichnisExtractor, 'sql_types': None},
+    'verteilungsschluessel': {'class': VerteilungsschluesselExtractor, 'sql_types': sql_data_types.sql_types_verteilungsschluessel},
+    'personalausgaben': {'class': PersonalausgabenExtractor, 'sql_types': None},
+    'sachausgaben': {'class': SachausgabenExtractor, 'sql_types': None},
+    'einnahmen': {'class': EinnahmenExtractor, 'sql_types': None},
+    'vermoegen': {'class': VermoegenExtractor, 'sql_types': None},
+    'verbindlichkeiten': {'class': VerbindlichkeitenExtractor, 'sql_types': None}
 }
 
 # Special config file names that don't follow the standard pattern
@@ -75,6 +76,11 @@ def parse_args():
         '--debug',
         action='store_true',
         help='Enable debug mode (process only one file)'
+    )
+    parser.add_argument(
+        '--no-sql',
+        action='store_true',
+        help='Skip writing to SQL Server'
     )
     return parser.parse_args()
 
@@ -156,8 +162,8 @@ def main():
         config = load_config(paths['config'])
         
         # Initialize the appropriate extractor
-        extractor_class = EXTRACTORS[args.type]
-        extractor = extractor_class(config)
+        extractor_info = EXTRACTORS[args.type]
+        extractor = extractor_info['class'](config)
         
         # Process files
         results_df = extractor.process_files(
@@ -165,10 +171,23 @@ def main():
             debug_limit=1 if args.debug else None
         )
         
-        # Save results
+        # Save results to CSV
         output_file = f"kindergarten_{args.type}.csv"
         output_path = paths['output_dir'] / output_file
         results_df.to_csv(output_path, index=False)
+        
+        # Write to SQL Server if not disabled
+        if not args.no_sql:
+            try:
+                write_to_sql(
+                    df=results_df,
+                    table_name=f"kindergarten_{args.type}",
+                    sql_types=extractor_info['sql_types'],
+                    logger=logger
+                )
+            except Exception as e:
+                logger.error(f"Failed to write to SQL Server: {str(e)}")
+                logger.error("Data was saved to CSV but not to SQL Server")
         
         # Print summary
         logger.info("\nExtraction Summary:")
@@ -176,6 +195,8 @@ def main():
         logger.info(f"Total files processed: {results_df['source_file'].nunique()}")
         logger.info(f"Total records: {len(results_df)}")
         logger.info(f"\nResults saved to: {output_path}")
+        if not args.no_sql:
+            logger.info(f"Results also written to SQL Server table: kindergarten_{args.type}")
         logger.info("\nSample of extracted data:")
         logger.info(results_df.head())
         
