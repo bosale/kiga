@@ -1,7 +1,10 @@
 {
-    "server": "dwhsqlr3.wienkav.at",
+    "server": "AVZ276\\SQLEXPRESS01",
     "database": "DWH_Kindergarten",
     "schema_name": "dbo",
     "driver": "ODBC Driver 17 for SQL Server",
-    "trusted_connection": "yes"
+    "trusted_connection": "yes",
+    "timeout": 30,
+    "encrypt": "no",
+    "trust_server_certificate": "yes"
 }

@@ -30,8 +30,14 @@ class KindergartenExcelExtractor(BaseExcelExtractor):
             # Find the correct sheet
             self.logger.debug(f"Opening Excel file: {str(file_path)}")
             xl = pd.ExcelFile(str(file_path))
-            sheet_name = self._find_matching_sheet(xl, self.config['sheet_patterns'])
-            self.logger.debug(f"Found sheet: {sheet_name}")
+            matching_sheets = self._find_matching_sheet(xl, self.config['sheet_patterns'])
+            
+            if not matching_sheets:
+                raise ValueError(f"No matching sheets found in {file_path}")
+            
+            # Use the first matching sheet
+            sheet_name = matching_sheets[0]
+            self.logger.debug(f"Using sheet: {sheet_name}")
             
             # Read the entire sheet
             self.logger.debug(f"Reading sheet {sheet_name} from {str(file_path)}")

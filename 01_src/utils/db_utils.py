@@ -5,11 +5,39 @@ Database utility functions for SQL Server operations.
 import json
 from pathlib import Path
 import logging
-from sqlalchemy import create_engine, MetaData, Table, Column, types
+from sqlalchemy import create_engine, MetaData, Table, Column, types, text
 from sqlalchemy.engine import URL
 import pandas as pd
 from typing import Dict, Optional
 import numpy as np
+import pyodbc
+
+def test_direct_odbc_connection(config: dict, logger: logging.Logger) -> bool:
+    """Test direct ODBC connection to diagnose issues."""
+    try:
+        # Build connection string for direct ODBC
+        conn_str = (
+            f"DRIVER={{{config['driver']}}};"
+            f"SERVER={config['server']};"
+            f"DATABASE={config['database']};"
+            f"Trusted_Connection=yes;"
+            f"TrustServerCertificate=yes;"
+            "Encrypt=no;"
+        )
+        logger.info(f"Attempting direct ODBC connection with string: {conn_str}")
+        
+        # Try to connect
+        conn = pyodbc.connect(conn_str, timeout=5)
+        cursor = conn.cursor()
+        cursor.execute("SELECT @@VERSION")
+        version = cursor.fetchone()[0]
+        logger.info(f"Successfully connected to SQL Server. Version: {version}")
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"Direct ODBC connection failed: {str(e)}")
+        return False
 
 def infer_sql_type(dtype: str, column_name: str) -> types.TypeEngine:
     """
@@ -56,31 +84,63 @@ def derive_sql_types(df: pd.DataFrame) -> Dict[str, types.TypeEngine]:
 
 def load_db_config() -> dict:
     """Load database configuration from config.json."""
-    config_path = Path(__file__).parent.parent / "config.json"
-    with open(config_path, 'r') as f:
-        return json.load(f)
+    try:
+        config_path = Path(__file__).parent.parent / "config.json"
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        raise ValueError(f"Error loading database config: {str(e)}")
 
 def create_connection_string(config: dict) -> str:
     """Create SQL Server connection string from config."""
-    connection_url = URL.create(
-        "mssql+pyodbc",
-        username=config.get('username'),
-        password=config.get('password'),
-        host=config['server'],
-        database=config['database'],
-        query={
+    try:
+        # Build query parameters
+        query_params = {
             'driver': config['driver'],
-            'TrustedConnection': config['trusted_connection']
+            'TrustedConnection': config['trusted_connection'],
+            'TrustServerCertificate': 'yes',
+            'Encrypt': 'no'
         }
-    )
-    return str(connection_url)
+        
+        # Add optional parameters if they exist
+        if 'timeout' in config:
+            query_params['timeout'] = str(config['timeout'])
+            
+        connection_url = URL.create(
+            "mssql+pyodbc",
+            username=config.get('username'),
+            password=config.get('password'),
+            host=config['server'],
+            database=config['database'],
+            query=query_params
+        )
+        return str(connection_url)
+    except Exception as e:
+        raise ValueError(f"Error creating connection string: {str(e)}")
+
+def test_connection(engine, logger: logging.Logger) -> bool:
+    """Test the database connection."""
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT @@VERSION"))
+            version = result.scalar()
+            logger.info(f"Successfully connected to SQL Server. Version: {version}")
+        return True
+    except Exception as e:
+        logger.error(f"SQLAlchemy connection test failed: {str(e)}")
+        return False
 
 def get_engine(config: Optional[dict] = None):
     """Get SQLAlchemy engine for database operations."""
     if config is None:
         config = load_db_config()
     connection_string = create_connection_string(config)
-    return create_engine(connection_string)
+    return create_engine(
+        connection_string,
+        pool_pre_ping=True,
+        pool_timeout=30,
+        pool_recycle=1800
+    )
 
 def write_to_sql(df: pd.DataFrame, table_name: str, sql_types: Optional[Dict] = None, logger: Optional[logging.Logger] = None):
     """
@@ -96,13 +156,25 @@ def write_to_sql(df: pd.DataFrame, table_name: str, sql_types: Optional[Dict] = 
         logger = logging.getLogger(__name__)
     
     try:
+        # Load config
+        config = load_db_config()
+        
+        # First try direct ODBC connection
+        if not test_direct_odbc_connection(config, logger):
+            raise ConnectionError("Could not establish direct ODBC connection")
+        
         # Derive SQL types if not provided
         if sql_types is None:
             sql_types = derive_sql_types(df)
             logger.info("SQL types automatically derived from DataFrame")
             
-        engine = get_engine()
-        schema_name = load_db_config().get('schema_name', 'dbo')
+        engine = get_engine(config)
+        
+        # Test SQLAlchemy connection
+        if not test_connection(engine, logger):
+            raise ConnectionError("Could not establish SQLAlchemy connection")
+            
+        schema_name = config.get('schema_name', 'dbo')
         
         # Create table if it doesn't exist
         metadata = MetaData()
@@ -127,4 +199,14 @@ def write_to_sql(df: pd.DataFrame, table_name: str, sql_types: Optional[Dict] = 
         
     except Exception as e:
         logger.error(f"Error writing to SQL Server: {str(e)}")
+        
+        # Log available SQL Server instances
+        try:
+            instances = pyodbc.drivers()
+            logger.error("Available ODBC drivers:")
+            for instance in instances:
+                logger.error(f"  {instance}")
+        except:
+            pass
+            
         raise 
